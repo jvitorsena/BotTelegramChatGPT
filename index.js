@@ -28,7 +28,8 @@ const getDavinciResponse = async (clientText) => {
         response.data.choices.forEach(({ text }) => {
             botResponse += text
         })
-        return `Chat GPT 🤖\n\n ${botResponse.trim()}`
+        // return `Teodoro 🤖\n\n ${botResponse.trim()}`
+        return `${botResponse.trim()}`
     } catch (e) {
         return `❌ OpenAI Response Error: ${e.response.data.error.message}`
     }
@@ -60,8 +61,8 @@ bot.command('quit', async (ctx) => {
 bot.on('text', async (ctx) => {
 
     const iaCommands = {
-        davinci3: "/bot",
-        dalle: "/img"
+        davinci3: "/teo",
+        dalle: "/img",
     }
 
     let firstWord = ctx.message.text.substring(0, ctx.message.text.indexOf(" "));
