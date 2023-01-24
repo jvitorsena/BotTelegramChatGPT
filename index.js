@@ -1,6 +1,7 @@
 import { Telegraf } from 'telegraf';
 import * as dotenv from 'dotenv'
 import { Configuration, OpenAIApi } from "openai"
+import Mesage from "./models/mesages.js";
 
 dotenv.config();
 
@@ -12,7 +13,6 @@ const configuration = new Configuration({
 });
 
 const openai = new OpenAIApi(configuration);
-
 
 const getDavinciResponse = async (clientText) => {
     const options = {
@@ -51,11 +51,11 @@ const getDalleResponse = async (clientText) => {
 }
 
 bot.command('quit', async (ctx) => {
-  // Explicit usage
-  await ctx.telegram.leaveChat(ctx.message.chat.id);
+    // Explicit usage
+    await ctx.telegram.leaveChat(ctx.message.chat.id);
 
-  // Using context shortcut
-  await ctx.leaveChat();
+    // Using context shortcut
+    await ctx.leaveChat();
 });
 
 bot.on('text', async (ctx) => {
@@ -78,37 +78,46 @@ bot.on('text', async (ctx) => {
                  * nosso próprio número e sim para 
                  * a pessoa ou grupo para o qual eu enviei
                  */
-                ctx.telegram.sendMessage(ctx.message.chat.id, response)
+
+                const newMesage = Mesage.build({
+                    chatId: ctx.message.chat.id,
+                    question: ctx.message.text.substring(ctx.message.text.indexOf(" ")),
+                    response: response
+                });
+            
+                newMesage.save();
+
+                ctx.telegram.sendMessage(ctx.message.chat.id, response);
                 // client.sendText(message.from === process.env.BOT_NUMBER ? message.to : message.from, response)
             })
             break;
-    
+
         default:
             break;
     }
 
-  // Explicit usage
-//   await ctx.telegram.sendMessage(ctx.message.chat.id, `Hello ${ctx.state.role}`);
-//   await ctx.telegram.sendMessage(ctx.message.chat.id, `Hello ${ctx.message.text}`);
-  // Using context shortcut
-//   await ctx.reply(`Hello ${ctx.state.role}`);
+    // Explicit usage
+    //   await ctx.telegram.sendMessage(ctx.message.chat.id, `Hello ${ctx.state.role}`);
+    //   await ctx.telegram.sendMessage(ctx.message.chat.id, `Hello ${ctx.message.text}`);
+    // Using context shortcut
+    //   await ctx.reply(`Hello ${ctx.state.role}`);
 });
 
 bot.on('callback_query', async (ctx) => {
-  // Explicit usage
-  await ctx.telegram.answerCbQuery(ctx.callbackQuery.id);
+    // Explicit usage
+    await ctx.telegram.answerCbQuery(ctx.callbackQuery.id);
 
-  // Using context shortcut
-  await ctx.answerCbQuery();
+    // Using context shortcut
+    await ctx.answerCbQuery();
 });
 
 bot.on('inline_query', async (ctx) => {
-  const result = [];
-  // Explicit usage
-  await ctx.telegram.answerInlineQuery(ctx.inlineQuery.id, result);
+    const result = [];
+    // Explicit usage
+    await ctx.telegram.answerInlineQuery(ctx.inlineQuery.id, result);
 
-  // Using context shortcut
-  await ctx.answerInlineQuery(result);
+    // Using context shortcut
+    await ctx.answerInlineQuery(result);
 });
 
 bot.launch();
