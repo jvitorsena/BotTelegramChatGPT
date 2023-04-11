@@ -7,8 +7,6 @@ dotenv.config();
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-const chatId = process.env.CHATID;
-
 const configuration = new Configuration({
     organization: process.env.ORGANIZATION_ID,
     apiKey: process.env.OPENAI_KEY,
@@ -62,29 +60,46 @@ bot.command('quit', async (ctx) => {
 
 bot.on('text', async (ctx) => {
 
-    const question = ctx.message.text;
+    const iaCommands = {
+        davinci3: "/teo",
+        dalle: "/img",
+    }
 
-    if (ctx.message.chat.id == chatId) {
-        getDavinciResponse(question).then((response) => {
-            /*
-             * Faremos uma validação no message.from
-             * para caso a gente envie um comando
-             * a response não seja enviada para
-             * nosso próprio número e sim para 
-             * a pessoa ou grupo para o qual eu enviei
-             */
+    let firstWord = ctx.message.text.substring(0, ctx.message.text.indexOf(" "));
 
-            const newMesage = Mesage.build({
-                chatId: ctx.message.chat.id,
-                question: question,
-                response: response
-            });
+    switch (firstWord) {
+        case iaCommands.davinci3:
+            const question = ctx.message.text.substring(ctx.message.text.indexOf(" "));
+            getDavinciResponse(question).then((response) => {
+                /*
+                 * Faremos uma validação no message.from
+                 * para caso a gente envie um comando
+                 * a response não seja enviada para
+                 * nosso próprio número e sim para 
+                 * a pessoa ou grupo para o qual eu enviei
+                 */
 
-            newMesage.save();
+                const newMesage = Mesage.build({
+                    chatId: ctx.message.chat.id,
+                    question: ctx.message.text.substring(ctx.message.text.indexOf(" ")),
+                    response: response
+                });
+            
+                newMesage.save();
 
-            ctx.telegram.sendMessage(ctx.message.chat.id, response);
-            // client.sendText(message.from === process.env.BOT_NUMBER ? message.to : message.from, response)
-        })
+                ctx.telegram.sendMessage(ctx.message.chat.id, response);
+                // client.sendText(message.from === process.env.BOT_NUMBER ? message.to : message.from, response)
+            })
+            break;
+        case iaCommands.dalle:
+            const imgDescription = ctx.message.text.substring(ctx.message.text.indexOf(" "));
+            getDalleResponse(imgDescription).then((imgUrl) => {
+                ctx.telegram.sendPhoto(ctx.message.chat.id, imgUrl)
+            })
+            break;
+
+        default:
+            break;
     }
 
     // Explicit usage
